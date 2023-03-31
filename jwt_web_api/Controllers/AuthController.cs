@@ -33,11 +33,8 @@ namespace jwt_web_api.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(UserDto request)
         {
-            if (user.UserName != request.UserName)
-                return BadRequest("user not found!");
-
-            if (!VerifyPassHash(request.Password, user.PassHash, user.PassSalt))
-                return BadRequest("wrong password");
+            if (user.UserName != request.UserName || !VerifyPassHash(request.Password, user.PassHash, user.PassSalt))
+                return BadRequest("wrong username or password!");
 
             string token = CreateToken(user);
 
@@ -57,7 +54,9 @@ namespace jwt_web_api.Controllers
         {
             List<Claim> claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.UserName)
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Role, "Noob"),
+                new Claim(ClaimTypes.Role, "Admin")
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(
