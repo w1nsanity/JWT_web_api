@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -12,10 +13,24 @@ namespace jwt_web_api.Controllers
     {
         public static User user = new User();
         private readonly IConfiguration _configuration;
+        public IUserService _userService;
 
-        public AuthController(IConfiguration configuration)
+        public AuthController(IConfiguration configuration, IUserService userService)
         {
             _configuration = configuration;
+            _userService = userService;
+        }
+
+        [HttpGet, Authorize]
+        public ActionResult<string> GetMe()
+        {
+            var userName = _userService.GetMyName();
+            return Ok(userName);
+
+            //var userName = User?.Identity?.Name;
+            //var role = User.FindFirstValue(ClaimTypes.Role);
+
+            //return Ok($"Hello {userName}, your role is {role}!");
         }
 
         [HttpPost("register")]
@@ -55,7 +70,6 @@ namespace jwt_web_api.Controllers
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(ClaimTypes.Role, "Noob"),
                 new Claim(ClaimTypes.Role, "Admin")
             };
 
